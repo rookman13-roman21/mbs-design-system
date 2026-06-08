@@ -387,6 +387,25 @@ https://b829827.yclients.com/company/{company_id}/activity/info/{activity_id}?o=
 
 ---
 
+### `open-coffeeshop` — Курс «Открытие кофейни с нуля»
+
+> ⚠️ Эта страница **не использует YClients-синхронизацию**.  
+> Это индивидуальный курс-консультация (не мероприятие по расписанию), поэтому:
+> - Кнопки «Оставить заявку» → `href="#consalt"` (попап формы Tilda)
+> - Кнопки покупки → `href="#order:Название=Цена"` (корзина Tilda)
+
+| Параметр | Значение |
+|----------|----------|
+| **Лендинг (Vercel)** | https://open-coffeeshop.vercel.app |
+| **Canonical (Tilda)** | https://baristaschool.ru/open_coffeeshop |
+| **Исходник** | `barista-course/open-coffeeshop/index.html` |
+| **Тарифы** | 70 000 ₽ (1 участник) · 140 000 ₽ (2 участника) |
+| **Кнопки заявки** | `href="#consalt"` |
+| **Кнопки покупки** | `href="#order:Курс Открытие кофейни 1 участник=70000"` |
+| **Schema.org** | `@type: Course`, offers.price: 70000 |
+
+---
+
 ## 🛠 Troubleshooting
 
 ### PM2 сразу падает (14 restarts → stopped)
@@ -451,4 +470,4 @@ pm2 start .venv/bin/python --name <имя> --interpreter none \
 
 ---
 
-*Обновлено: 15 мая 2026*
+*Обновлено: 19 мая 2026*
