@@ -15,6 +15,7 @@
 | [JS-виджет — шаблон](#-js-виджет--шаблон) | Готовый код для вставки в блок |
 | [Пошаговое подключение](#-пошаговое-подключение-нового-мастер-класса) | Инструкция для нового события |
 | [API-сервис](#-api-сервис-webinar-budget-sync) | Как устроен бэкенд |
+| [Диагностика сайта](#-диагностика-доступности-сайта-baristaschoolru) | Мониторинг Tilda, API и проблем загрузки |
 | [Добавить новый сервис](#-добавить-синхронизацию-для-нового-мастер-класса) | Масштабирование |
 | [Готовые реализации](#-готовые-реализации) | Что уже подключено |
 | [Troubleshooting](#-troubleshooting) | Что делать если не работает |
@@ -406,6 +407,191 @@ https://b829827.yclients.com/company/{company_id}/activity/info/{activity_id}?o=
 
 ---
 
+## 🩺 Диагностика доступности сайта baristaschool.ru
+
+### Назначение
+
+Мониторинг нужен, чтобы отделять реальные проблемы сайта от разовых сбоев Tilda/CDN/API/браузера:
+
+- страницы Tilda грузятся частично или не догружают блоки;
+- виджеты остаются в skeleton/loading;
+- внешние JS/CSS не загрузились;
+- API-запросы зависли или вернули ошибку;
+- серверная проверка не дождалась ответа от страницы.
+
+### Где смотреть
+
+| Что | Где |
+|-----|-----|
+| Dashboard | `https://159-194-202-120.sslip.io/site-health` |
+| API отчёт | `https://api.barista-school.ru/site-health/report` |
+| Browser monitor | `https://api.barista-school.ru/site-health/monitor.js` |
+| Лог на сервере | `/root/app/data/site-health.jsonl` |
+| API проект | `/Users/Romka/Downloads/All_Code/yclients-reviews-widget` |
+| Dashboard проект | `/Users/Romka/Downloads/All_Code/YClients-Dashboard` |
+| API PM2 process | `barista-reviews` |
+| Dashboard PM2 process | `yclients-dashboard` |
+
+`/site-health/report` закрыт админ-ключом. Ключ хранится только в серверных `.env`, не вставлять его в Tilda и не коммитить.
+
+### Код в Tilda
+
+В глобальном `<head>` Tilda добавлен лёгкий монитор:
+
+```html
+<script defer src="https://api.barista-school.ru/site-health/monitor.js"></script>
+```
+
+Он должен стоять в настройках сайта, а не в каждом отдельном блоке.
+
+### Что логируется
+
+| Тип события | Значение |
+|-------------|----------|
+| `page_load` | Страница загрузилась в браузере |
+| `slow_page` | Страница грузилась дольше порога |
+| `resource_error` | Не загрузился важный JS/CSS/image |
+| `js_error` | Ошибка JavaScript на странице |
+| `promise_error` | Необработанная Promise-ошибка |
+| `fetch_problem` | API-запрос вернул ошибку или был медленным |
+| `fetch_error` | API-запрос упал по сети/timeout |
+| `slow_resource` | Важный ресурс грузился медленно |
+| `widget_problem` | Виджет долго пустой, в skeleton или в состоянии ошибки |
+| `server_check` | Серверная проверка URL |
+| `server_check_error` | Серверная проверка не получила ответ |
+
+### Серверные проверки
+
+Core/API проверяются раз в минуту:
+
+- `https://baristaschool.ru/`;
+- `https://baristaschool.ru/coffee_club`;
+- `https://baristaschool.ru/excu`;
+- `https://baristaschool.ru/latte_art_battle`;
+- `https://api.barista-school.ru/health`;
+- `https://api.barista-school.ru/widgets/reviews.js`;
+- `https://api.barista-school.ru/static/karta-uchenikov/karta-uchenikov.js`.
+
+Основные услуги проверяются раз в 15 минут:
+
+- `/barista_courses`;
+- `/probarista`;
+- `/latte-art`;
+- `/expert`;
+- `/alternative`;
+- `/sence`;
+- `/group`;
+- `/master_open`;
+- `/business-intensive`;
+- `/open_coffeeshop`;
+- `/bar_engineering`;
+- `/regions`;
+- `/sca_menu`;
+- `/unique_menu`;
+- `/summer_drinks`;
+- `/home_barista_online`;
+- `/home_barista`;
+- `/barista_3`;
+- `/coffie_team`;
+- `/coffee_club`;
+- `/capping`;
+- `/tea_capping`;
+- `/master_doma`;
+- `/casino`;
+- `/excu`;
+- `/latte_art_battle`;
+- `/mbs_mixology_cup`.
+
+### Как читать проблемы
+
+`This operation was aborted` с длительностью около `10 с` означает, что серверная проверка не дождалась ответа до timeout. Это не равно HTTP 500.
+
+Текущая логика мониторинга:
+
+- timeout проверки: `SITE_HEALTH_CHECK_TIMEOUT_MS`, по умолчанию `10000`;
+- при `abort/timeout` монитор делает одну повторную попытку через `SITE_HEALTH_RETRY_DELAY_MS`, по умолчанию `750`;
+- если повторная попытка успешна, событие пишется как `server_check` с `attempts: 2` и `detail: retry_ok`;
+- если после повторной попытки снова ошибка, это уже более сильный сигнал реальной проблемы;
+- core и service cron защищены от наложения: если предыдущий обход ещё идёт, следующий запуск этой группы пропускается.
+
+Лог ротируется при 20 МБ в `site-health.jsonl.1`, поэтому он не растёт бесконечно.
+
+### Инцидент 08.06.2026
+
+В логе были пачки `server_check_error` для:
+
+- `/`;
+- `/coffee_club`;
+- `/excu`;
+- `/latte_art_battle`.
+
+Симптом: `This operation was aborted`, длительность около `10 с`.
+
+Проверка показала:
+
+- это не HTTP 500;
+- API в это же время отвечал;
+- ручная проверка с API-сервера позже вернула `200` за десятки миллисекунд;
+- после добавления retry свежие проверки стали зелёными.
+
+Вывод: событие похоже на краткий сетевой/Tilda/CDN timeout, а не на постоянное падение сайта. Если новые ошибки будут появляться уже с `attempts: 2`, их нужно считать более серьёзными.
+
+### Инцидент 09.06.2026 — Beget, ТСПУ и TLSv1.3
+
+Симптомы:
+
+- `https://baristaschool.ru` открывался частично, но блоки с серверными виджетами зависали;
+- не грузились отзывы, тренеры, карта учеников, онлайн-расписания и фотоальбомы;
+- `https://api.barista-school.ru/` не открывался в Safari и Chrome;
+- `https://5.35.93.225/` отвечал, а домен `api.barista-school.ru` с SNI зависал на TLS-handshake;
+- с самого API-сервера `curl https://api.barista-school.ru/` работал.
+
+В комментариях Beget под постом о частичной недоступности ресурсов сообщили, что проблема плавающая, зависит от провайдера/региона/браузера и связана с обновлением настроек ТСПУ. Как временный обход Beget предложил перейти на `TLSv1.2` или версию ниже вместо `TLSv1.3`.
+
+Что было сделано:
+
+- на сервере `root@5.35.93.225` для `api.barista-school.ru` отключён `TLSv1.3`;
+- создан отдельный SSL include `/etc/letsencrypt/options-ssl-nginx-tls12.conf`;
+- в `/etc/nginx/sites-enabled/barista-api` подключён этот include только для API-домена;
+- глобальный Certbot include `/etc/letsencrypt/options-ssl-nginx.conf` не менялся;
+- backup nginx-конфига сохранён в `/root/barista-api.bak-20260609-tls12`.
+
+Проверка после правки:
+
+```bash
+nginx -t
+systemctl reload nginx
+curl -vkI https://api.barista-school.ru/
+curl -vkI --tlsv1.2 https://api.barista-school.ru/
+openssl s_client -connect api.barista-school.ru:443 -servername api.barista-school.ru -tls1_2 < /dev/null
+```
+
+Ожидаемый результат:
+
+- `https://api.barista-school.ru/` возвращает `200 OK`;
+- handshake идёт по `TLSv1.2`;
+- `TLSv1.3` получает `alert protocol version`;
+- ресурсы виджетов `/api/trainers.json`, `/trainers-widget.js`, `/widgets/reviews.js`, `/api/cuppings.json` отвечают `200 OK`.
+
+Если проблема повторится:
+
+1. Сначала проверить, открывается ли `https://api.barista-school.ru/` из обычного браузера.
+2. Сравнить доступ по IP и по домену:
+   ```bash
+   curl -vkI https://5.35.93.225/ -H 'Host: api.barista-school.ru'
+   curl -vkI --connect-to api.barista-school.ru:443:5.35.93.225:443 https://api.barista-school.ru/
+   ```
+3. Если IP отвечает, а домен с SNI зависает, это снова сетевой/TLS/SNI-уровень, а не ошибка JS-виджета.
+4. Проверить, не вернулся ли `TLSv1.3` после certbot/nginx-обновлений:
+   ```bash
+   nginx -T 2>/dev/null | grep -n "ssl_protocols"
+   ```
+5. Не удалять fallback-домены из Tilda-блоков: они нужны как страховка при подобных сетевых сбоях.
+
+Важно: не подключать критичные скрипты с `api.barista-school.ru` через `defer` в глобальном `<head>` Tilda без fallback. Если TLS-запрос зависнет, он может задержать `DOMContentLoaded` и сломать запуск других блоков.
+
+---
+
 ## 🛠 Troubleshooting
 
 ### PM2 сразу падает (14 restarts → stopped)
@@ -470,4 +656,4 @@ pm2 start .venv/bin/python --name <имя> --interpreter none \
 
 ---
 
-*Обновлено: 19 мая 2026*
+*Обновлено: 9 июня 2026*
