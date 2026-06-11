@@ -170,7 +170,7 @@ nginx -t && systemctl reload nginx
   href="https://b829827.yclients.com/..."   ← fallback: прямая YClients-ссылка
   class="<BTN-CLASS>"
   target="_blank"
-  rel="noopener"
+  rel="noopener noreferrer"
 >Записаться</a>
 ```
 
@@ -299,7 +299,7 @@ curl https://api.barista-school.ru/api/v1/<slug>/next
 1. В каждом блоке с кнопкой «Записаться»:
    - Добавить `id="<slug>-date-badge"` к элементу с датой (только в Hero)
    - Добавить уникальный `id` к кнопке
-   - Поставить в `href` прямую YClients-ссылку + `target="_blank" rel="noopener"`
+   - Поставить в `href` прямую YClients-ссылку + `target="_blank" rel="noopener noreferrer"`
    - Вставить JS-виджет из шаблона выше
 
 2. Синхронизировать изменения в `index.html` (для Vercel-превью)
@@ -385,6 +385,39 @@ https://b829827.yclients.com/company/{company_id}/activity/info/{activity_id}?o=
 | **Исходники блоков** | `barista-course/Online_webinar_open_cafe_money/blocks/` |
 | **Кнопки** | `.mbs-wm-hero__btn`, `.mbs-wm-buy__btn`, `.mbs-wm-cta__btn` |
 | **Бейдж даты** | `id="wm-date-badge"` |
+
+---
+
+### `/excu` — Экскурсия на обжарочное производство
+
+Страница использует не endpoint `/api/v1/<slug>/next`, а публичный JSON со списком планируемых экскурсий.
+
+| Параметр | Значение |
+|----------|----------|
+| **Страница** | `https://baristaschool.ru/excu` |
+| **Исходник** | `barista-course/excu/tilda-block.html` |
+| **Локальное превью** | `barista-course/excu/index.html` |
+| **Основной endpoint** | `https://api.barista-school.ru/api/excursions.json` |
+| **Fallback endpoint** | `https://159-194-202-120.sslip.io/api-fallback/api/excursions.json` |
+| **service_id** | 14093497 |
+| **company_id** | 453962 |
+| **Механика записи** | кнопка берёт `booking_url` конкретного события |
+
+Frontend-правила:
+
+- Не привязываться к конкретному `activity_id`: он меняется при переносе события.
+- Брать события из массива `excursions`, фильтровать прошедшие, сортировать по дате/времени.
+- `booking_url` перед вставкой в кнопку проверять: только `https` и домены yClients.
+- Если мест нет, ссылки нет или ссылка не прошла проверку, кнопка ведёт в Telegram.
+- Если основной endpoint недоступен, пробовать fallback endpoint.
+- Если оба endpoint недоступны, сначала использовать свежий кэш `localStorage`; затем stale-кэш до 12 часов; если кэша нет, показывать error-state с кнопками «Попробовать ещё раз», «Лист ожидания» и Telegram.
+- Внешние ссылки открывать с `target="_blank" rel="noopener noreferrer"`.
+
+SEO на странице:
+
+- В Tilda Page Settings задать `Title`, `Description`, `Canonical URL`, social title/description/image.
+- В HTML-блоке держать JSON-LD `WebPage`, `Service`, `FAQPage`, `BreadcrumbList`.
+- После загрузки расписания формировать динамический JSON-LD `Event` только для планируемых событий.
 
 ---
 
@@ -633,7 +666,7 @@ pm2 start .venv/bin/python --name <имя> --interpreter none \
 
 ### Кнопка не открывает новую вкладку
 
-Убедиться, что на `<a>` стоит `target="_blank" rel="noopener"`.
+Убедиться, что на `<a>` стоит `target="_blank" rel="noopener noreferrer"`.
 
 ---
 
@@ -656,4 +689,4 @@ pm2 start .venv/bin/python --name <имя> --interpreter none \
 
 ---
 
-*Обновлено: 9 июня 2026*
+*Обновлено: 11 июня 2026*
