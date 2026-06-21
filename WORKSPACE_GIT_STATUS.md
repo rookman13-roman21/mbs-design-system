@@ -74,6 +74,24 @@
 - Production alias: `https://mbs-mixology-cup-vercel-public-2026.vercel.app`.
 - Commit: `841d5c4 Update mixology cup participant UI`.
 
+## CodeGraph в workspace
+
+Актуально на 2026-06-21.
+
+- `codegraph` установлен локально: `/opt/homebrew/bin/codegraph`.
+- Индексы `.codegraph/` есть в нескольких корнях проектов под `All_Code`, включая:
+  - `Coffee_menu`;
+  - `YClients-Dashboard`;
+  - `mbs-mixology-cup`;
+  - `bitrix-tools`;
+  - `yclients-gsheets`;
+  - `mbs-design-system`;
+  - `schedule-online`;
+  - `yclients-reviews-widget`;
+  - `mbs-photo-gallery`.
+- В `Coffee_menu` индекс расположен на уровне `/Users/Romka/Downloads/All_Code/Coffee_menu/.codegraph`, а не внутри `Coffee_menu/HTML_coffee_menu/.codegraph`. Для задач frontend/workflow repo `HTML_coffee_menu` использовать корень `Coffee_menu` как indexed project root.
+- `.codegraph/` — локальный индекс, не коммитить в GitHub.
+
 ## Рекомендованный следующий шаг на другом компьютере
 
 1. В каждом рабочем проекте сначала выполнить `git fetch origin`.
