@@ -1,100 +1,94 @@
 # Workspace Git Status — All_Code
 
-Актуально на 2026-06-10, после `git fetch origin --prune` по всем найденным git-репозиториям.
+Актуально на 2026-06-29 после локальной инвентаризации workspace.
 
-Цель: зафиксировать состояние проектов перед работой с другого компьютера в VS Code. GitHub должен оставаться источником правды для `main`; проекты со статусом `behind`, `ahead/behind` или большим количеством локальных изменений нельзя пушить без отдельной синхронизации.
+Цель: держать GitHub источником правды и быстро понимать, с какого проекта безопасно продолжать работу на другом устройстве. Перед любыми правками в конкретном проекте всё равно нужно выполнить `git status --short --branch` и, если доступна сеть, `git fetch origin`.
 
 ## Итог
 
-- Найдено git-репозиториев: 15.
-- Полностью синхронизированы с GitHub и без рабочих изменений: 1 (`bitrix-tools`).
-- Синхронизированы с GitHub, но есть только локальный мусор `.DS_Store`/служебные папки: 4.
-- Есть локальные изменения при актуальной ветке: 5.
-- Есть локальные изменения и ветка отстала от GitHub: 5.
-- Есть `ahead 1, behind 2`: 1 (`barista-course`) — требует отдельной безопасной синхронизации.
+- Найдено верхнеуровневых Git-репозиториев: 14.
+- Найдено вложенных Git-репозиториев: 2.
+- Все найденные Git-репозитории сейчас чистые локально и синхронизированы с `origin`.
+- Tracked `.env`, `.vercel` и `.DS_Store` в найденных Git-репозиториях не обнаружены.
+- Папка `MBSProjectMap` в `/Users/Romka/Downloads/All_Code` не найдена. Самая полная текущая карта workspace — `mbs-design-system.code-workspace`.
 
-## Сводная таблица
+## Git-репозитории
 
-| Проект | Ветка | GitHub-состояние | Локальное состояние | Действие |
-|---|---:|---|---|---|
-| `Coffee_menu/HTML_coffee_menu` | `main` | `behind 1` | много изменений, удалений, `.env.production`, новые изображения | Не пушить. Сначала сохранить/разобрать локальные изменения и подтянуть `origin/main`. |
-| `Karta-Uchenikov` | `main` | upstream не настроен в статусе | изменён `tilda-embed.html` | Можно рассмотреть отдельный commit/push, но сначала проверить remote tracking. |
-| `YClients-Dashboard` | `main` | актуален с `origin/main` | изменены `public/nav.js`, `public/styles.css` | Можно коммитить отдельной задачей после просмотра diff и проверок. |
-| `bar-ergonomics` | `main` | upstream не настроен в статусе | только `.DS_Store` | Не требует push. Лучше добавить/проверить `.gitignore` отдельно. |
-| `barista-course` | `main` | `ahead 1, behind 2` | много изменений/новых подпроектов | Не пушить. Нужна отдельная синхронизация: сохранить локальное состояние, разобраться с `origin/main`. |
-| `barista-course/home-barista` | `main` | `behind 1` | изменения в HTML/Tilda/vercel | Не пушить до pull/rebase/merge и проверки конфликтов. |
-| `bitrix-tools` | `main` | актуален с `origin/main` | чисто | Ничего не требуется. |
-| `mbs-calendar` | `main` | `behind 1` | изменения в docs/script/styles/tilda, `.DS_Store` | Не пушить до синхронизации с `origin/main`. |
-| `mbs-client-map` | `main` | `behind 1` | изменения в `config.js`, `index.html`, `script.js`, `.DS_Store` | Не пушить до синхронизации. Важно: remote называется `mbs-project-map`, не путать с MBSProjectMap. |
-| `mbs-design-system` | `main` | актуален с `origin/main` | `.DS_Store`, `.claude/`, этот отчёт | Коммитить только отчёт, служебные файлы не добавлять. |
-| `mbs-mixology-cup` | `main` | актуален с `origin/main` | только `.DS_Store` | Уже актуализирован, задеплоен и сохранён на GitHub commit `841d5c4`. |
-| `mbs-photo-gallery` | `main` | актуален с `origin/main` | изменения в gallery generators/blocks | Можно коммитить отдельной задачей после проверки diff. |
-| `schedule-online` | `main` | `behind 1` | много изменений, новые scripts, `.vscode`, `deploy.sh` | Не пушить до синхронизации с `origin/main`. |
-| `yclients-gsheets` | `main` | актуален с `origin/main` | только `.DS_Store` | Ничего не требуется. |
-| `yclients-reviews-widget` | `main` | актуален с `origin/main` | изменения в README/widget/server/nginx | Можно коммитить отдельной задачей после проверки diff и тестов. |
+| Проект | Ветка | Состояние | Комментарий |
+|---|---:|---|---|
+| `Karta-Uchenikov` | `main` | чисто, `origin/main` | Рабочий проект карты учеников. |
+| `YClients-Dashboard` | `main` | чисто, `origin/main` | Бэкэнд/дашборд личного кабинета и внутренних разделов. |
+| `bar-ergonomics` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
+| `barista-course` | `work/excu-local-page` | чисто, `origin/work/excu-local-page` | Сейчас рабочая ветка, не `main`. |
+| `bitrix-tools` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
+| `mbs-calendar` | `main` | чисто, `origin/main` | Рабочий проект календаря. |
+| `mbs-client-map` | `main` | чисто, `origin/main` | Ключ карты хранится в коде по принятому решению, доменные ограничения нужно проверить в кабинете Яндекса. |
+| `mbs-design-system` | `main` | чисто до обновления этого отчёта | Центр дизайн-системы и рабочих знаний. |
+| `mbs-marketing-analytics` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
+| `mbs-mixology-cup` | `main` | чисто, `origin/main` | Архив/страницы Mixology Cup. |
+| `mbs-photo-gallery` | `main` | чисто, `origin/main` | Галереи и фотоальбомы. |
+| `schedule-online` | `main` | чисто, `origin/main` | Виджеты расписания и записи. |
+| `yclients-gsheets` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
+| `yclients-reviews-widget` | `main` | чисто, `origin/main` | Виджет отзывов. |
 
-## Проекты, которые нельзя пушить прямо сейчас
+## Вложенные Git-репозитории
 
-Эти проекты либо отстали от GitHub, либо разошлись с GitHub, либо содержат рискованные локальные изменения:
+| Проект | Ветка | Состояние | Что важно |
+|---|---:|---|---|
+| `Coffee_menu/HTML_coffee_menu` | `main` | чисто, `origin/main` | Основной Git-репозиторий находится внутри `Coffee_menu`, не на верхнем уровне. |
+| `barista-course/home-barista` | `main` | чисто, `origin/main` | Это отдельный репозиторий `home-barista`, не часть родительского `barista-course`. |
 
-- `Coffee_menu/HTML_coffee_menu`: `behind 1`, много удалений, изменён `.env.production`.
-- `barista-course`: `ahead 1, behind 2`, много новых и изменённых файлов.
-- `barista-course/home-barista`: `behind 1` плюс локальные изменения.
-- `mbs-calendar`: `behind 1` плюс локальные изменения.
-- `mbs-client-map`: `behind 1` плюс локальные изменения.
-- `schedule-online`: `behind 1` плюс много локальных изменений.
+## Не-Git папки
 
-Безопасный порядок для каждого из них:
+| Папка | Содержимое | Действие |
+|---|---|---|
+| `email-marketing` | `.env`, `.venv`, логи, output, HTML-шаблоны, Python-скрипты | Не сохранять на GitHub без отдельной подготовки: нужен `.gitignore`, `.env.example`, проверка логов/output на персональные данные. |
+| `Calculator` | Один HTML-виджет `mbs-mixology-cup/tilda/participants-widget.html` | Если продолжать работу, сначала решить: это отдельный проект или архивный файл. |
+| `.vscode` | Workspace setting `files.exclude` | Локальная настройка workspace, не проектный репозиторий. |
 
-1. Посмотреть `git diff --stat` и ключевые diff.
-2. Проверить, нет ли секретов и `.env` в staged/unstaged.
-3. Сохранить локальные изменения в отдельную ветку `backup/...` или рабочую ветку.
-4. Обновить основную ветку от `origin/main` без `force push`.
-5. Разобрать конфликты, прогнать тесты/проверки.
-6. Только после этого делать commit/push.
+## Локальные секреты и служебные файлы
 
-## Проекты с `.env` в workspace
+Найдены локальные `.env`:
 
-Найдены `.env`/`.env.*` в нескольких проектах. Их нельзя добавлять в GitHub без отдельной проверки:
-
-- `Coffee_menu/HTML_coffee_menu/.env.production`
 - `YClients-Dashboard/.env`
+- `bar-ergonomics/.env`
+- `barista-course/.env`
 - `bitrix-tools/.env`
 - `email-marketing/.env`
+- `mbs-marketing-analytics/.env`
 - `yclients-gsheets/.env`
-- `schedule-online/*/.env`
-- `barista-course/.env`
-- `bar-ergonomics/.env`
 
-Перед любым массовым `git add` использовать только явный список файлов, не `git add .`.
+Правило: перед любым `git add` использовать явный список файлов, не `git add .`.
 
-## Что уже актуально
+Найдены локальные `.vercel`:
 
-- `mbs-mixology-cup` сохранён на GitHub и задеплоен на Vercel.
-- Production alias: `https://mbs-mixology-cup-vercel-public-2026.vercel.app`.
-- Commit: `841d5c4 Update mixology cup participant UI`.
+- `bar-ergonomics/.vercel`
+- несколько подпапок внутри `barista-course`
+- `mbs-mixology-cup/.vercel`
+- `schedule-online/webinar-budget-sync/landing/.vercel`
 
-## CodeGraph в workspace
+Эти папки не tracked. Их не добавлять в GitHub.
 
-Актуально на 2026-06-21.
+## Что уже закрыто в этой инвентаризации
 
-- `codegraph` установлен локально: `/opt/homebrew/bin/codegraph`.
-- Индексы `.codegraph/` есть в нескольких корнях проектов под `All_Code`, включая:
-  - `Coffee_menu`;
-  - `YClients-Dashboard`;
-  - `mbs-mixology-cup`;
-  - `bitrix-tools`;
-  - `yclients-gsheets`;
-  - `mbs-design-system`;
-  - `schedule-online`;
-  - `yclients-reviews-widget`;
-  - `mbs-photo-gallery`.
-- В `Coffee_menu` индекс расположен на уровне `/Users/Romka/Downloads/All_Code/Coffee_menu/.codegraph`, а не внутри `Coffee_menu/HTML_coffee_menu/.codegraph`. Для задач frontend/workflow repo `HTML_coffee_menu` использовать корень `Coffee_menu` как indexed project root.
-- `.codegraph/` — локальный индекс, не коммитить в GitHub.
+- `barista-course` приведён к чистому состоянию в ветке `work/excu-local-page`.
+- `barista-course/home-barista` проверен как отдельный чистый репозиторий.
+- `barista-course/.vscode/tasks.json` заменён на переносимую задачу `git-status`.
+- В `barista-course` проигнорированы локальные вложенные/служебные файлы: `home-barista/`, `push-open-coffeeshop.sh`, временные Tilda exports.
 
-## Рекомендованный следующий шаг на другом компьютере
+## Рекомендованный порядок следующей работы
 
-1. В каждом рабочем проекте сначала выполнить `git fetch origin`.
-2. Начинать с проектов без `behind/diverged`: `YClients-Dashboard`, `mbs-photo-gallery`, `yclients-reviews-widget`.
-3. Для `barista-course`, `schedule-online`, `Coffee_menu/HTML_coffee_menu` не делать push до отдельного разбора локальных изменений.
-4. Не добавлять `.DS_Store`, `.claude/`, `.env`, `.env.production` и временные файлы.
+1. Для следующей продуктовой задачи выбирать конкретный проект, а не править workspace массово.
+2. Если цель — страницы сайта/Tilda, продолжать с `barista-course`.
+3. Если цель — личный кабинет, сотрудники, доступы и маркетинг v2, продолжать с `YClients-Dashboard`.
+4. Если цель — расписание, запись, yClients и публичные виджеты, продолжать с `schedule-online`.
+5. Если цель — галереи/фотоальбомы/каппинги, продолжать с `mbs-photo-gallery` и связанными Tilda-блоками.
+6. Отдельно решить судьбу `email-marketing`: либо оформить как Git-проект, либо оставить локальным инструментом и документировать отдельно.
+
+## Перед работой с любого другого устройства
+
+1. Открыть нужный проект.
+2. Выполнить `git status --short --branch`.
+3. Выполнить `git fetch origin`, если есть сеть.
+4. Если ветка `behind`, `ahead` или `diverged`, не начинать правки до синхронизации.
+5. Проверить, что `.env`, `.vercel`, `.DS_Store`, output/logs и временные файлы не попадают в staged.
