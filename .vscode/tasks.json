@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "MBS: Workspace preflight",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/workspace-preflight.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "MBS: Workspace preflight offline",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/workspace-preflight.sh --no-fetch",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -2,7 +2,17 @@
 
 Актуально на 2026-06-29 после локальной инвентаризации workspace.
 
-Цель: держать GitHub источником правды и быстро понимать, с какого проекта безопасно продолжать работу на другом устройстве. Перед любыми правками в конкретном проекте всё равно нужно выполнить `git status --short --branch` и, если доступна сеть, `git fetch origin`.
+Цель: держать GitHub источником правды и быстро понимать, с какого проекта безопасно продолжать работу на другом устройстве. Перед любыми правками в конкретном проекте нужно запустить preflight или вручную выполнить `git status --short --branch` и, если доступна сеть, `git fetch origin`.
+
+Автоматическая проверка перед работой:
+
+```bash
+scripts/workspace-preflight.sh
+```
+
+В VS Code доступна задача `MBS: Workspace preflight`. Скрипт ничего не чинит автоматически: только проверяет Git-состояние, синхронизацию с `origin`, локальные изменения и рискованные staged-файлы.
+
+Для будущих Codex-сессий правило закреплено в `AGENTS.md`.
 
 ## Итог
 
@@ -44,7 +54,7 @@
 | Папка | Содержимое | Действие |
 |---|---|---|
 | `Calculator` | Один HTML-виджет `mbs-mixology-cup/tilda/participants-widget.html` | Разобран как legacy-хвост. Копия сохранена в `mbs-mixology-cup/legacy/participants-widget.html`; исходную папку не удаляли без отдельного разрешения. |
-| `.vscode` | Workspace setting `files.exclude` | Локальная настройка workspace, не проектный репозиторий. |
+| `.vscode` | VS Code task `MBS: Workspace preflight` | Локальная задача для запуска проверки из VS Code. |
 
 ## Локальные секреты и служебные файлы
 
@@ -71,6 +81,7 @@
 
 ## Что уже закрыто в этой инвентаризации
 
+- Добавлена автоматическая безопасная проверка workspace: `scripts/workspace-preflight.sh`, VS Code task `MBS: Workspace preflight` и `AGENTS.md` с правилом для будущих Codex-сессий.
 - `barista-course` приведён к чистому состоянию в ветке `work/excu-local-page`.
 - `barista-course/home-barista` проверен как отдельный чистый репозиторий.
 - `barista-course/.vscode/tasks.json` заменён на переносимую задачу `git-status`.
