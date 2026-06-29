@@ -26,7 +26,7 @@
 | `mbs-client-map` | `main` | чисто, `origin/main` | Ключ карты хранится в коде по принятому решению, доменные ограничения нужно проверить в кабинете Яндекса. |
 | `mbs-design-system` | `main` | чисто до обновления этого отчёта | Центр дизайн-системы и рабочих знаний. |
 | `mbs-marketing-analytics` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
-| `mbs-mixology-cup` | `main` | чисто, `origin/main` | Архив/страницы Mixology Cup. |
+| `mbs-mixology-cup` | `main` | чисто, `origin/main` | Архив/страницы Mixology Cup; старый participants widget из `Calculator` сохранён в `legacy/`. |
 | `mbs-photo-gallery` | `main` | чисто, `origin/main` | Галереи и фотоальбомы. |
 | `schedule-online` | `main` | чисто, `origin/main` | Виджеты расписания и записи. |
 | `yclients-gsheets` | `main` | чисто, `origin/main` | `.env` есть локально, не tracked. |
@@ -43,7 +43,7 @@
 
 | Папка | Содержимое | Действие |
 |---|---|---|
-| `Calculator` | Один HTML-виджет `mbs-mixology-cup/tilda/participants-widget.html` | Если продолжать работу, сначала решить: это отдельный проект или архивный файл. |
+| `Calculator` | Один HTML-виджет `mbs-mixology-cup/tilda/participants-widget.html` | Разобран как legacy-хвост. Копия сохранена в `mbs-mixology-cup/legacy/participants-widget.html`; исходную папку не удаляли без отдельного разрешения. |
 | `.vscode` | Workspace setting `files.exclude` | Локальная настройка workspace, не проектный репозиторий. |
 
 ## Локальные секреты и служебные файлы
@@ -76,6 +76,7 @@
 - `barista-course/.vscode/tasks.json` заменён на переносимую задачу `git-status`.
 - В `barista-course` проигнорированы локальные вложенные/служебные файлы: `home-barista/`, `push-open-coffeeshop.sh`, временные Tilda exports.
 - `email-marketing` оформлен как приватный GitHub-репозиторий: `.env`/логи/output/.venv игнорируются, добавлен `.env.example`, launchd plist больше не содержит абсолютный путь пользователя.
+- `Calculator` разобран как архивный Tilda-виджет Mixology Cup; файл перенесён в `mbs-mixology-cup/legacy/participants-widget.html`, документация `mbs-mixology-cup` обновлена и сохранена на GitHub.
 
 ## Рекомендованный порядок следующей работы
 
