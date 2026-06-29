@@ -440,6 +440,56 @@ SEO на странице:
 
 ---
 
+## ☕ Цифровые каппинги: ЛК + Dashboard + yClients
+
+### Назначение
+
+Цифровые каппинги связывают три источника:
+
+- yClients отвечает за расписание, запись участника и историю посещений;
+- `YClients-Dashboard` отвечает за `/photo-albums`, настройки оценочного листа, лоты, `lot.meta`, ответы и агрегаты;
+- `bitrix-tools` отвечает за личный кабинет, Tilda hosted fragments и авторизацию участника.
+
+### Где что лежит
+
+| Часть | Проект / путь | Что делает |
+|---|---|---|
+| Dashboard каппингов | `/Users/Romka/Downloads/All_Code/YClients-Dashboard` | `/photo-albums`, `src/cupping-admin-service.js`, `GET /api/public/cuppings*` |
+| Личный кабинет | `/Users/Romka/Downloads/All_Code/bitrix-tools/templates/gift-certificates/source/cabinet-gift/` | Вкладка `Каппинги`, компактные карточки, попап деталей |
+| Оценочный лист | `/Users/Romka/Downloads/All_Code/bitrix-tools/templates/gift-certificates/cupping-score-sheet-tilda-block.html` | Анкета, оценка лотов, отправка результата |
+| Tilda loader | `cupping-score-sheet-tilda-loader.html` | Загружает hosted fragment на `/cupping_score_sheet` |
+| Knowledge base Dashboard | `YClients-Dashboard/CUPPING_ADMIN_ROADMAP.md` | Архитектура цифровых каппингов |
+| Knowledge base ЛК | `bitrix-tools/PROJECT_CONTEXT.md`, `PROJECT_MAP.md`, `templates/gift-certificates/ROADMAP.md` | Пользовательский контур и файлы ЛК |
+
+### Data flow
+
+```text
+yClients records/history
+  + public events.json
+  + Dashboard /photo-albums
+    ↓
+/cabinet/gift → вкладка Каппинги
+    ↓
+GET https://api.barista-school.ru/api/public/cuppings/portal
+    ↓ proxy
+реальный Dashboard https://159-194-202-120.sslip.io
+```
+
+Ключевая связка: `photo album id = cupping_id = event_id`.
+
+### Правила
+
+- Источник правды по зерну и `lot.meta` — Dashboard `/photo-albums`, не публичное расписание.
+- `GET /api/public/cuppings/portal` требует Bearer token ЛК и не отдаёт чужие анкеты, телефоны, email и сырые submissions.
+- `canScore=true` только если каппинг `open` и сегодня день каппинга по Москве.
+- Групповые итоги в ЛК показывать только после статуса `published`.
+- Если пользователь уже записан на будущий каппинг, кнопку `Записаться` не показывать; показывать `Вы записаны`.
+- Если лотов нет, текст заглушки: `Выбираем зерно вместе с обжарщиком`.
+- В карточке ЛК оставлять дату, название, обжарочную компанию, статус и действия; описание и зерно открывать в попапе.
+- Production proxy `https://api.barista-school.ru/api/public/cuppings/*` должен идти на `https://159-194-202-120.sslip.io`, не на сервер `5.35.93.225`.
+
+---
+
 ## 🩺 Диагностика доступности сайта baristaschool.ru
 
 ### Назначение
